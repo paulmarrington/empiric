@@ -1,0 +1,3 @@
+(using [github dexie]
+  (var db (new Dexie "Lispz-Projects"))
+)

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html manifesto=index.cache-manifest>
+  <head>
+    <title>Empiric</title>
+  <body>
+    <bootstrap class=riot>
+      <sidebar>
+        <tree name=empiric-pim />
+      </sidebar>
+
+      <page-content fluid=true>
+        <div class=row>
+          <div class=col-sm-6>
+            <code-editor class=riot name=literate height=48% />
+          </div>
+          <div class=col-sm-6>
+            <code-editor class=riot name=code height=48% />
+          </div>
+        </div>
+      </page-content>
+    </bootstrap>
+
+    <script src=https://cdn.rawgit.com/paulmarrington/lispz/v0.3.04/ext/lispz.js></script>
+    <script type="text/lispz">
+      (using [message jquery riot]
+        (set! lispz.debug true)
+        (message.wait-for "code-editor/code" (=>
+          (message.send "code-editor/code"
+            {action: "open" key: "scratchpad.lispz" contents: null})
+        ))
+        (message.wait-for "code-editor/literate" (=>
+          (message.send "code-editor/literate"
+            {action: "open" key: "scratchpad.lispz.md" contents: null})
+        ))
+      )
+    </script>
+  </body>
+</html>
