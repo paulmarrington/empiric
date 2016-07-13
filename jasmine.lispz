@@ -1,0 +1,238 @@
+### spec: Jasmine
+  Jasmine is one of the few BDD/TDD tools that will work in the browser without
+  requiring server support. Jasmine specifications are embedded into the
+  Empiric literate specifications sections by using markdown fenced code blocks.
+  For Jasmine use jasmine as the parser as well and the language conversion, so
+
+      \`\`\`jasmine es6
+      describe("a description", =>
+        it("is a test", =>
+          expect(3).toBe(3)
+        )
+      )
+      \`\`\`
+
+      \`\`\`jasmine lispz
+      (describe "a description" (lambda []
+        (it "is a test" (lambda []
+          ((expect 3).toBe 3)
+        ))
+      ))
+      \`\`\`
+
+  When documentation is generated from the specifications, the jasmine statements
+  are converted to the dynamic specifications. One _it_ can have more than one
+  expectation.
+
+  ```jasmine
+  (describe "(describe \"comment\" (lambda [] ...))" (lambda []
+    (stateful state {a 1 b 0})
+    (beforeAll (lambda [] (state.update {a: 2})))
+    (afterAll (lambda [] (state.update {a: 0})))
+    (it "(beforeAll (lambda [] ...)) ... (afterAll (lambda [] ...))" (lambda []
+      ((expect state.a).toBe 2)
+    ))
+    (beforeEach (lambda [] (state.update {b: 2})))
+    (afterEach (lambda [] (state.update {b: 0})))
+    (it "(beforeEach (lambda [] ...)) ... (afterEach (lambda [] ...))" (lambda []
+      ((expect state.b).toBe 2)
+    ))
+    (it "(it|beforeEach|AfterEach|beforeAll|AfterAll \"async\" (lambda [done] ... (done) ... (done.fail))"
+      (lambda [done]
+        (delay 1 (lambda [] (done))
+        (cond (isnt state.b 2) (done.fail))
+      )
+    )
+    (it "(it \"Can fail\" (lambda [] (cond false fail(\"I failed\"))" (lambda []
+      (cond false fail("I failed"))
+    ))
+    (it "(it \"expect ===\" (lambda [] ((expect 1).toBe 1)))" (lambda []
+      ((expect 1).toBe 1)
+    ))
+    (it "(it \"expect !==\" (lambda [] ((expect 1).not.toBe 2)))" (lambda []
+      ((expect 1).not.toBe 2)
+    ))
+    (it "(it \"expect =\" (lambda [] ((expect {a: 1 b: 5}).toEqual {a: 1 b: 5})))" (lambda []
+      ((expect {a: 1 b: 5}).toEqual {a: 1 b: 5})
+    ))
+    (it "(it \"containing (object, array, regexp, string)\" (lambda [] ((expect {a: 1 b: 5}).toEqual (containing {a: 1}))))" (lambda []
+      ((expect {a: 1 b: 5}).toEqual (containing {a: 1}))
+    ))
+    (it "(it \"expect regex\" (lambda [] ((expect "hello world").toMatch '/worl/')))" (lambda []
+      ((expect "hello world").toMatch '/worl/')
+    ))
+    (it "(it \"defined\" (lambda [] ((expect undefined).not.toBeDefined)))" (lambda []
+      (((expect undefined).not).toBeDefined)
+    ))
+    (it "(it \"undefined\" (lambda [] ((expect undefined).toBeUndefined)))" (lambda []
+      ((expect undefined).toBeUndefined)
+    ))
+    (it "(it \"null\" (lambda [] ((expect 1).not.toBeNull)))" (lambda []
+      ((expect 1).not.toBeNull)
+    ))
+    (it "(it \"Truthy\" (lambda [] ((expect true).toBeTruthy)))" (lambda []
+      ((expect true).toBeTruthy)
+    ))
+    (it "(it \"Falsy\" (lambda [] ((expect 0).toBeFalsy)))" (lambda []
+      ((expect 0).toBeFalsy)
+    ))
+    (it "(it \"Contains\" (lambda [] ((expect [[1 2 3]]).toContain 2)))" (lambda []
+      ((expect [[1 2 3]]).toContain 2)
+    ))
+    (it "(it \"Less Than\" (lambda [] ((expect 1.1).toBeLessThan 2)))" (lambda []
+      ((expect 1.1).toBeLessThan 2)
+    ))
+    (it "(it \"Greater Than\" (lambda [] ((expect 11).toBeGreaterThan 2)))" (lambda []
+      ((expect 11).toBeGreaterThan 2)
+    ))
+    (it "(it \"Close to\" (lambda [] ((expect 1.1).toBeCloseTo 1.2 1)))" (lambda []
+      ((expect 1.1).toBeCloseTo 1.2 1)
+    ))
+    (it "(it \"Throws exception\" (lambda [] ((expect (lambda [] throw "abc")).toThrow)))" (lambda []
+      ((expect (lambda [] throw "abc")).toThrow)
+    ))
+    (it "(it \"Throws Error\" (lambda [] ((expect (lambda [] throw (TypeError "abc"))).toThrowError TypeError)))" (lambda []
+      ((expect (lambda [] throw (TypeError "abc"))).toThrowError TypeError)
+    ))
+    (it "(it \"Throws Error\" (lambda [] ((expect (lambda [] throw (Error "abc"))).toThrowError "abc")))" (lambda []
+      ((expect (lambda [] throw (Error "abc"))).toThrowError "abc")
+    ))
+    (it "(it \"Throws Error\" (lambda [] ((expect (lambda [] throw (Error "abc"))).toThrowError Error "abc")))" (lambda []
+      ((expect (lambda [] throw (Error "abc"))).toThrowError Error "abc")
+    ))
+    (it "(it \"Throws Error\" (lambda [] ((expect (lambda [] throw (Error "abc"))).toThrowError '/b/')))" (lambda []
+      ((expect (lambda [] throw (Error "abc"))).toThrowError '/b/')
+    ))
+    (xdescribe "(xdescribe \"disabled suite\" (lambda [] ...))" (lambda []
+      ((expect 1).toBe 2)
+    ))
+    (it "(it \"Pending spec\" (lambda [] (pending \"This is why pending\"))" (lambda []
+      ((expect 1).toBe 2)
+      (pending "This is why pending"))
+    ))
+  ))
+  ```
+###
+(using  [net cdnjs dom]
+  ### spec: Jasmine >> Spies
+     ```jasmine
+    (describe "Spies" (lambda []
+      (it "(spy func) ... (expect-to-have-been-called-with spied params) ... (spy-off func)" (lambda []
+        (ref func (lambda [a b] (return (+ a b))))
+        (spy func)
+        ((expect (func 1 2)).toBe 3)
+        (expect-to-have-been-called-with func 1 2)
+        (spy-off func)
+      ))
+      (it "(spy-method console trace) ... (expect-to-have-been-called spied)" (lambda []
+        (spy-method console trace)
+        (console.trace "multiple" "parameters")
+        (expect-to-have-been-called (console.trace)
+      ))
+      (it "(any-arg [Object|Number|Function...]) ## use with called-with" (lambda []
+        (ref func (lambda [a b] (return (+ a b))))
+        (spy func)
+        (expect-to-have-been-called-with func (any-arg Number) (any-arg Number))
+        (spy-off func)
+      ))
+    ))
+  ###
+  (macro spy          [func]
+    (return ((createSpy (#join '' '"' func '"') func).and.callThrough))
+  )
+  (macro spy-method   [cls method] (spyOn cls (#join '' '"' method '"')))
+  (macro spy-off      [method]     (method .stub))
+
+  (macro expect-to-have-been-called [spied] (('expect' spied).toHaveBeenCalled))
+  (macro expect-to-have-been-called-with [spied *params]
+    (('expect' spied).toHaveBeenCalled *params)
+  )
+  (global any-arg [type] (jasmine.any type))
+  (global containing [items]
+    (cond
+      (items instanceof Array)     (return (jasmine.arrayContaining items))
+      (items instanceof Regexp)    (return (jasmine.stringMatching items))
+      (is "string" (typeof items)) (return (jasmine.stringMatching items))
+      (else)                       (return (jasmine.objectContaining items))
+    )
+  )
+
+  ### spec: Jasmine >> Spies >> Mocks
+     ```jasmine
+    (describe "Mocks" (lambda []
+      (it "(mock func [args...] *body)  ... (mock-off func)" (lambda []
+        (ref func (lambda [a b] (return (+ a b))))
+        (mock func [a b] (return (* a b)))
+        ((expect (func 1 2)).toBe 2)
+        (mock-off spied-func)
+        ((expect (func 1 2)).toBe 3)
+      ))
+    ))
+  ###
+  (macro mock         [func params *body]
+    (return
+      (createSpy (#join '' '"' func '"') func).and.callFake (lambda params *body)
+    )
+  )
+  (macro mock-off     [method]     (method .stub))
+
+  ### spec: Jasmine >> Spies >> Call Monitoring
+      ```jasmine
+      (it "(call-count func)" (lambda []
+        (ref func (lambda [a b] (return (+ a b))))
+        (spy func)
+        (func 1 2)) (func 11 22))
+        ((expect (call-count func)).toBe 2)
+        (spy-off func)
+      ))
+      (it "(args func) ## array of array of args for each call" (lambda []
+        (ref func (lambda [a b] (return (+ a b))))
+        (spy func)
+        (func 1 2)) (func 11 22))
+        ((expect (args func)).toEqual [[[[1 2]] [[11 22]]]])
+        (spy-off func)
+      ))
+      ```
+  ###
+  (macro call-count    [method]     (method .calls.count))
+  (macro args          [method]     (method .calls.allArgs))
+
+  ### spec: Jasmine >> Spies >> Clock
+      ```jasmine
+      (it "(controlled-clock ... (advance-clock ms) ...)" (lambda []
+        (ref test (lambda []))
+        (spy test)
+        (controlled-clock
+          (delay 2000 (test))
+          (expect (call-count test).toBe 0)
+          (advance-clock 3000)
+          (expect (call-count test).toBe 1)
+        )
+      ))
+      ```
+  ###
+  (macro controlled-clock [*body]
+    (jasmine.clock.install) *body (jasmine.clock.uninstall)
+  )
+  (macro advance-clock [ms]         (jasmine.clock.tick ms))
+  (macro mock-date     [date]       (jasmine.clock.mockData date))
+
+  (document.body.addEventListener "click" (lambda [ev]
+    (debug ev)
+    (ev.preventDefault)
+  ))
+
+  (ref build (lambda [target-repo]
+    (return (cdnjs.build target-repo "jasmine" [[
+      {repo: "jasmine" files: [[
+        {include: '/jasmine\.(css|js)$/'}
+        {include: '/jasmine-html.js$/'}
+        {include: '/boot.js$/'}
+      ]]}
+    ]]))
+  ))
+  (lispz.css "ext/jasmine.css")
+  (ref loaded (net.script "ext/jasmine.js" (lambda [] (return window.jasmine))))
+  (when  loaded [] (export { build }))
+  (catch loaded [] (export { build }))
+)
